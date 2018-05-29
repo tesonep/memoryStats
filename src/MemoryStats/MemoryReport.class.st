@@ -64,6 +64,8 @@ MemoryReport >> root: anObject [
 MemoryReport >> visit: anObject [ 
 	
 	anObject class isImmediateClass ifTrue: [ ^ self ].
+	anObject isClass ifTrue: [ ^self ].	
+		
 	(self wellKnownObjects includes: anObject) ifTrue: [ ^ self ].
 	
 	(alreadyVisited includes: anObject) ifTrue: [ ^ self ].

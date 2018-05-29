@@ -5,7 +5,9 @@ Class {
 		'analyzedClass',
 		'instances',
 		'instanceVariables',
-		'indexedVariables'
+		'indexedVariables',
+		'nilInstanceVariables',
+		'nilIndexedVariables'
 	],
 	#category : #MemoryStats
 }
@@ -22,11 +24,19 @@ MSReportByClass >> analyzedClass: aClass [
 	analyzedClass := aClass
 ]
 
+{ #category : #accessing }
+MSReportByClass >> averageSizeInWords [
+	^ self memorySizeInWords / self instances
+]
+
 { #category : #initialization }
 MSReportByClass >> initialize [
 	instances := 0.
 	instanceVariables := 0.
-	indexedVariables := 0
+	indexedVariables := 0.
+	
+	nilInstanceVariables := 0.
+	nilIndexedVariables := 0.
 ]
 
 { #category : #accessing }
@@ -44,11 +54,35 @@ MSReportByClass >> memorySizeInWords [
 	^ instanceVariables + indexedVariables + self totalHeaderWords
 ]
 
+{ #category : #accessing }
+MSReportByClass >> percentageInNil [
+	^ ((nilIndexedVariables + nilInstanceVariables) / (instanceVariables + indexedVariables)
+		* 100) asFloat
+]
+
+{ #category : #accessing }
+MSReportByClass >> printOn: aStream [
+	super printOn: aStream.
+
+	aStream
+		nextPutAll: ' (instances:';
+		print: self instances;
+		nextPutAll: ' avgSize: ';
+		print: self averageSizeInWords asFloat;
+		nextPutAll: ' % in nil: ';
+		print: self percentageInNil;
+		nextPutAll: ')'
+]
+
 { #category : #registering }
-MSReportByClass >> register: anObject [ 
+MSReportByClass >> register: anObject [
 	instances := instances + 1.
 	instanceVariables := instanceVariables + anObject class instSize.
-	indexedVariables := indexedVariables + anObject basicSize 
+	indexedVariables := indexedVariables + anObject basicSize.
+	1 to: anObject basicSize do: [ :idx | (anObject at: idx) ifNil: [ nilIndexedVariables := nilIndexedVariables + 1 ] ].
+	
+	1 to: anObject class instSize do:
+		[ :idx | (anObject instVarAt: idx) ifNil: [ nilInstanceVariables := nilInstanceVariables + 1 ] ]
 ]
 
 { #category : #accessing }
