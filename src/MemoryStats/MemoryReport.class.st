@@ -60,6 +60,16 @@ MemoryReport >> root: anObject [
 	root := anObject
 ]
 
+{ #category : #accessing }
+MemoryReport >> variables [
+	^ instancesByClass sumNumbers: [ :each | each variables ]
+]
+
+{ #category : #accessing }
+MemoryReport >> variablesInNil [
+	^ instancesByClass sumNumbers: [ :each | each variablesInNil ]
+]
+
 { #category : #visiting }
 MemoryReport >> visit: anObject [ 
 	

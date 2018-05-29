@@ -56,8 +56,7 @@ MSReportByClass >> memorySizeInWords [
 
 { #category : #accessing }
 MSReportByClass >> percentageInNil [
-	^ ((nilIndexedVariables + nilInstanceVariables) / (instanceVariables + indexedVariables)
-		* 100) asFloat
+	^ (self variablesInNil / self variables	* 100) asFloat
 ]
 
 { #category : #accessing }
@@ -88,4 +87,14 @@ MSReportByClass >> register: anObject [
 { #category : #accessing }
 MSReportByClass >> totalHeaderWords [
 	^ self instances * 2
+]
+
+{ #category : #accessing }
+MSReportByClass >> variables [
+	^ indexedVariables + instanceVariables
+]
+
+{ #category : #accessing }
+MSReportByClass >> variablesInNil [
+	^ nilIndexedVariables + nilInstanceVariables
 ]
