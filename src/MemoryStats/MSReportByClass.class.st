@@ -3,11 +3,11 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'analyzedClass',
-		'instances',
 		'instanceVariables',
 		'indexedVariables',
 		'nilInstanceVariables',
-		'nilIndexedVariables'
+		'nilIndexedVariables',
+		'visitedInstances'
 	],
 	#category : #MemoryStats
 }
@@ -29,9 +29,15 @@ MSReportByClass >> averageSizeInWords [
 	^ self memorySizeInWords / self instances
 ]
 
+{ #category : #testing }
+MSReportByClass >> hasVisited: anObject [ 
+	
+	^ visitedInstances includes: anObject
+]
+
 { #category : #initialization }
 MSReportByClass >> initialize [
-	instances := 0.
+	visitedInstances := IdentitySet new.
 	instanceVariables := 0.
 	indexedVariables := 0.
 	
@@ -41,7 +47,7 @@ MSReportByClass >> initialize [
 
 { #category : #accessing }
 MSReportByClass >> instances [
-	^ instances
+	^ visitedInstances size
 ]
 
 { #category : #accessing }
@@ -75,7 +81,8 @@ MSReportByClass >> printOn: aStream [
 
 { #category : #registering }
 MSReportByClass >> register: anObject [
-	instances := instances + 1.
+	visitedInstances add: anObject.
+	
 	instanceVariables := instanceVariables + anObject class instSize.
 	indexedVariables := indexedVariables + anObject basicSize.
 	1 to: anObject basicSize do: [ :idx | (anObject at: idx) ifNil: [ nilIndexedVariables := nilIndexedVariables + 1 ] ].

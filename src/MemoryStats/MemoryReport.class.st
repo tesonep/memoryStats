@@ -3,8 +3,7 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'root',
-		'instancesByClass',
-		'alreadyVisited'
+		'instancesByClass'
 	],
 	#category : #MemoryStats
 }
@@ -27,7 +26,7 @@ MemoryReport >> initialize [
 	super initialize.
 	
 	instancesByClass := Dictionary new.
-	alreadyVisited := Set new.
+
 ]
 
 { #category : #'API - report' }
@@ -73,16 +72,18 @@ MemoryReport >> variablesInNil [
 { #category : #visiting }
 MemoryReport >> visit: anObject [ 
 	
+	| reportForClass |
+	
 	anObject class isImmediateClass ifTrue: [ ^ self ].
 	anObject isClass ifTrue: [ ^self ].	
 		
 	(self wellKnownObjects includes: anObject) ifTrue: [ ^ self ].
 	
-	(alreadyVisited includes: anObject) ifTrue: [ ^ self ].
+	reportForClass := self reportFor: anObject class.
 	
-	(self reportFor: anObject class) register: anObject. 
+	(reportForClass hasVisited: anObject) ifTrue: [ ^ self ].
+	reportForClass register: anObject. 
 
-	alreadyVisited add: anObject.	
 	self visitReferences: anObject.
 ]
 
