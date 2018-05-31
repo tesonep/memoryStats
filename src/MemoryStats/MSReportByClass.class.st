@@ -7,7 +7,9 @@ Class {
 		'indexedVariables',
 		'nilInstanceVariables',
 		'nilIndexedVariables',
-		'visitedInstances'
+		'visitedInstances',
+		'emptyIndexedCollections',
+		'emptyInstanceCollections'
 	],
 	#category : #MemoryStats
 }
@@ -29,6 +31,11 @@ MSReportByClass >> averageSizeInWords [
 	^ self memorySizeInWords / self instances
 ]
 
+{ #category : #registering }
+MSReportByClass >> emptyCollections [
+	^ emptyIndexedCollections + emptyInstanceCollections
+]
+
 { #category : #testing }
 MSReportByClass >> hasVisited: anObject [ 
 	
@@ -43,6 +50,8 @@ MSReportByClass >> initialize [
 	
 	nilInstanceVariables := 0.
 	nilIndexedVariables := 0.
+	emptyInstanceCollections := 0.
+	emptyIndexedCollections := 0
 ]
 
 { #category : #accessing }
@@ -60,6 +69,11 @@ MSReportByClass >> memorySizeInWords [
 	^ instanceVariables + indexedVariables + self totalHeaderWords
 ]
 
+{ #category : #registering }
+MSReportByClass >> percentageEmptyCollections [
+	^ (self emptyCollections / self variables * 100) asFloat
+]
+
 { #category : #accessing }
 MSReportByClass >> percentageInNil [
 	^ (self variablesInNil / self variables	* 100) asFloat
@@ -68,7 +82,6 @@ MSReportByClass >> percentageInNil [
 { #category : #accessing }
 MSReportByClass >> printOn: aStream [
 	super printOn: aStream.
-
 	aStream
 		nextPutAll: ' (instances:';
 		print: self instances;
@@ -76,19 +89,24 @@ MSReportByClass >> printOn: aStream [
 		print: self averageSizeInWords asFloat;
 		nextPutAll: ' % in nil: ';
 		print: self percentageInNil;
+		nextPutAll: ' % in empty: ';
+		print: self percentageEmptyCollections;
 		nextPutAll: ')'
 ]
 
 { #category : #registering }
 MSReportByClass >> register: anObject [
 	visitedInstances add: anObject.
-	
 	instanceVariables := instanceVariables + anObject class instSize.
 	indexedVariables := indexedVariables + anObject basicSize.
-	1 to: anObject basicSize do: [ :idx | (anObject at: idx) ifNil: [ nilIndexedVariables := nilIndexedVariables + 1 ] ].
-	
-	1 to: anObject class instSize do:
-		[ :idx | (anObject instVarAt: idx) ifNil: [ nilInstanceVariables := nilInstanceVariables + 1 ] ]
+	1 to: anObject basicSize do: [ :idx | 
+		(anObject at: idx) ifNil: [ nilIndexedVariables := nilIndexedVariables + 1 ].
+		(((anObject at: idx) isKindOf: Collection) and: [ (anObject at: idx) isEmpty ])
+			ifTrue: [ emptyIndexedCollections := emptyIndexedCollections + 1 ] ].
+	1 to: anObject class instSize do: [ :idx | 
+		(anObject instVarAt: idx) ifNil: [ nilInstanceVariables := nilInstanceVariables + 1 ].
+		(((anObject instVarAt: idx) isKindOf: Collection) and: [ (anObject instVarAt: idx) isEmpty ])
+			ifTrue: [ emptyInstanceCollections := emptyInstanceCollections + 1 ] ]
 ]
 
 { #category : #accessing }
