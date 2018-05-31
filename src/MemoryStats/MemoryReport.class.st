@@ -35,6 +35,11 @@ MemoryReport >> instances [
 ]
 
 { #category : #'API - report' }
+MemoryReport >> instancesByClass [
+	^ instancesByClass
+]
+
+{ #category : #'API - report' }
 MemoryReport >> instancesOf: aClass [ 
 	^ (self reportFor: aClass) instances
 ]
